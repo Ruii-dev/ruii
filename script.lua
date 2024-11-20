@@ -35,7 +35,7 @@ local Success, Response = pcall(function()
 end)
 
 if not Success then
-	warn("\nRuii Library - Failed to load Feather Icons. Error code: " .. Response .. "\n")
+	warn("\nRuii Lock - Failed to load Feather Icons. Error code: " .. Response .. "\n")
 end	
 
 local function GetIcon(IconName)
