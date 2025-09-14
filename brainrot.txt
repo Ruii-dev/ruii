@@ -552,3 +552,45 @@ ServTab:AddButton({
         teleportToDifferentServer()
     end
 })
+
+-- Bouton téléport + réexécution du script
+ServTab:AddButton({
+    Name = "Rejoindre et relancer script",
+    Callback = function()
+        local servers = getServers()
+        if not servers or #servers == 0 then
+            warn("Aucun serveur trouvé ou erreur durant la récupération.")
+            return
+        end
+
+        local currentJobId = game.JobId
+        local availableServers = {}
+
+        for _, server in pairs(servers) do
+            if server.id ~= currentJobId and server.playing < server.maxPlayers then
+                table.insert(availableServers, server)
+            end
+        end
+
+        if #availableServers == 0 then
+            warn("Aucun serveur différent disponible.")
+            return
+        end
+
+        local chosenServer = availableServers[math.random(1, #availableServers)]
+
+        -- Important : requeue le script pour le relancer après téléport
+        if syn and syn.queue_on_teleport then
+            syn.queue_on_teleport([[
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/Ruii-dev/ruii/refs/heads/main/Brainrot.txt"))()
+            ]])
+        elseif queue_on_teleport then
+            queue_on_teleport([[
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/Ruii-dev/ruii/refs/heads/main/Brainrot.txt"))()
+            ]])
+        end
+
+        -- Téléportation
+        TeleportService:TeleportToPlaceInstance(placeId, chosenServer.id, player)
+    end
+})
